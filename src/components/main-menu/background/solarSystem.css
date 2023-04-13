@@ -1,0 +1,9 @@
+.annotation {
+    transform: translate3d(-50%, -150%, 0);
+    text-align: center;
+    background: #7676aa;
+    color: white;
+    padding: 50px;
+    border-radius: 30px;
+    font-size: 75px;
+}
