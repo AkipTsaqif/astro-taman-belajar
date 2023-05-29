@@ -58,7 +58,7 @@ const Eccentricity = () => {
                 alignItems: "center",
             }}
         >
-            <div style={{ width: "600px", height: "600px" }}>
+            <div style={{ width: "100%", height: "100%" }}>
                 <svg viewBox="0 0 100 100">
                     <circle
                         cx="50"
@@ -81,12 +81,19 @@ const Eccentricity = () => {
                     <circle id="orbiting-object" r="1" fill="red" />
                 </svg>
             </div>
-            <div style={{ width: "600px", margin: "auto", marginLeft: "auto" }}>
-                <Typography>Eksentrisitas:</Typography>
+            <div style={{ width: "100%", margin: "auto", marginLeft: "auto" }}>
                 <Slider
                     max={2}
                     min={0}
-                    marks={marks}
+                    size="small"
+                    marks={marks.map((mark) => ({
+                        ...mark,
+                        label: (
+                            <Typography className="text-xs">
+                                {mark.label}
+                            </Typography>
+                        ),
+                    }))}
                     step={0.01}
                     value={ecc}
                     valueLabelDisplay="auto"
