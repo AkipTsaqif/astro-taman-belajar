@@ -8,6 +8,7 @@ import Eccentricity from "./components/animations/Eccentricity";
 import "./index.css";
 import { CssBaseline } from "@mui/material";
 import Chapter from "./components/chapter/Chapter";
+import AnimationsMenu from "./components/animations/AnimationsMenu";
 
 const router = createBrowserRouter([
     {
@@ -27,8 +28,12 @@ const router = createBrowserRouter([
         element: <Eccentricity />,
     },
     {
-        path: "/chapter/nama-chapter",
+        path: "/materi/nama-materi",
         element: <Chapter />,
+    },
+    {
+        path: "/animasi",
+        element: <AnimationsMenu />,
     },
 ]);
 

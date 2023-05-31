@@ -27,7 +27,7 @@ const Navbar = (props) => {
 
     return (
         <Box className="fixed top-0 w-full bg-white z-10 ">
-            <Box className="flex items-center px-2 pt-2 pb-2">
+            <Box className="flex items-center px-2 pt-2 pb-2 border-b-2 border-binus">
                 <IconButton onClick={() => setSidebarOpen(!sidebarOpen)}>
                     <MenuIcon />
                 </IconButton>
@@ -70,7 +70,7 @@ const Navbar = (props) => {
 
             <Box className="flex">
                 <Box
-                    className={`w-48 flex-shrink-0 bg-binus h-screen transition-all ease-in-out duration-500 ${
+                    className={`w-48 fixed left-0 flex-shrink-0 bg-binus h-screen transition-all ease-in-out duration-500 ${
                         sidebarOpen
                             ? "transform translate-x-0"
                             : "transform -translate-x-48"
@@ -82,7 +82,7 @@ const Navbar = (props) => {
                         >
                             <ListItemText>
                                 <Typography className="text-white font-quantico font-bold">
-                                    Chapters
+                                    Materi
                                 </Typography>
                             </ListItemText>
                             {chaptersOpen ? (
@@ -100,33 +100,33 @@ const Navbar = (props) => {
                                 <ListItemButton
                                     sx={{ pl: 4 }}
                                     component={Link}
-                                    to="/chapter/nama-chapter"
+                                    to="/materi/nama-materi"
                                 >
                                     <ListItemText>
                                         <Typography className="text-white font-quantico">
-                                            Chapter 1
+                                            Materi 1
                                         </Typography>
                                     </ListItemText>
                                 </ListItemButton>
                                 <ListItemButton
                                     sx={{ pl: 4 }}
                                     component={Link}
-                                    to="/chapters/2"
+                                    to="/materi/2"
                                 >
                                     <ListItemText>
                                         <Typography className="text-white font-quantico">
-                                            Chapter 2
+                                            Materi 2
                                         </Typography>
                                     </ListItemText>
                                 </ListItemButton>
                                 <ListItemButton
                                     sx={{ pl: 4 }}
                                     component={Link}
-                                    to="/chapters/3"
+                                    to="/materi/3"
                                 >
                                     <ListItemText>
                                         <Typography className="text-white font-quantico">
-                                            Chapter 3
+                                            Materi 3
                                         </Typography>
                                     </ListItemText>
                                 </ListItemButton>
@@ -136,7 +136,7 @@ const Navbar = (props) => {
                         <ListItemButton onClick={() => setQuizOpen(!quizOpen)}>
                             <ListItemText>
                                 <Typography className="text-white font-quantico font-bold">
-                                    Quiz
+                                    Kuis
                                 </Typography>
                             </ListItemText>
                             {quizOpen ? (
@@ -150,44 +150,44 @@ const Navbar = (props) => {
                                 <ListItemButton
                                     sx={{ pl: 4 }}
                                     component={Link}
-                                    to="/quiz"
+                                    to="/kuis"
                                 >
                                     <ListItemText>
                                         <Typography className="text-white font-quantico">
-                                            Take quiz
+                                            Mulai kuis
                                         </Typography>
                                     </ListItemText>
                                 </ListItemButton>
                                 <ListItemButton
                                     sx={{ pl: 4 }}
                                     component={Link}
-                                    to="/quiz/highscores"
+                                    to="/kuis/skor-tinggi"
                                 >
                                     <ListItemText>
                                         <Typography className="text-white font-quantico">
-                                            View high scores
+                                            Lihat skor tinggi
                                         </Typography>
                                     </ListItemText>
                                 </ListItemButton>
                             </List>
                         </Collapse>
-                        <ListItem component={Link} to="/animations">
+                        <ListItem component={Link} to="/animasi">
                             <ListItemText>
                                 <Typography className="text-white font-quantico font-bold">
-                                    Animations
+                                    Kumpulan Animasi
                                 </Typography>
                             </ListItemText>
                         </ListItem>
                     </List>
                 </Box>
                 <Box
-                    className={`flex-1 m-4 transition-all ease-in-out duration-500 ${
-                        sidebarOpen
-                            ? "transform translate-x-0"
-                            : "transform -translate-x-48"
+                    className={`flex-1 ml-4 h-screen w-screen transition-all ease-in-out duration-500 ${
+                        sidebarOpen ? "transform ml-52" : "transform ml-4"
                     }`}
                 >
-                    {props.children}
+                    <Box className="flex h-screen justify-between">
+                        {props.children}
+                    </Box>
                 </Box>
             </Box>
         </Box>
