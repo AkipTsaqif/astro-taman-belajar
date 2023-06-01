@@ -15,12 +15,11 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-import { Transition } from "@headlessui/react";
+import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 
 const Navbar = (props) => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [chaptersOpen, setChaptersOpen] = useState(false);
-    const [quizOpen, setQuizOpen] = useState(false);
 
     const location = useLocation();
     const pathnames = location.pathname.split("/").filter((x) => x);
@@ -36,9 +35,11 @@ const Navbar = (props) => {
                         className="text-black text-2xl font-bold font-bebas"
                         variant="h6"
                     >
-                        Space & Astronomy
+                        Astronomi dan Angkasa Luar
                     </Typography>
-                    <Breadcrumbs>
+                    <Breadcrumbs
+                        separator={<ArrowRightAltIcon fontSize="small" />}
+                    >
                         <Link to="/" className="font-quantico">
                             Home
                         </Link>
@@ -49,7 +50,7 @@ const Navbar = (props) => {
                             const isLast = index === pathnames.length - 1;
                             return isLast ? (
                                 <Typography
-                                    className="font-bold font-quantico"
+                                    className="font-bold font-quantico capitalize"
                                     key={name}
                                 >
                                     {name}
@@ -58,7 +59,7 @@ const Navbar = (props) => {
                                 <Link
                                     to={routeTo}
                                     key={name}
-                                    className="font-quantico"
+                                    className="font-quantico capitalize"
                                 >
                                     {name}
                                 </Link>
@@ -133,44 +134,14 @@ const Navbar = (props) => {
                             </List>
                         </Collapse>
 
-                        <ListItemButton onClick={() => setQuizOpen(!quizOpen)}>
+                        <ListItem component={Link} to="/kuis">
                             <ListItemText>
                                 <Typography className="text-white font-quantico font-bold">
                                     Kuis
                                 </Typography>
                             </ListItemText>
-                            {quizOpen ? (
-                                <ExpandLess className="text-white" />
-                            ) : (
-                                <ExpandMore className="text-white" />
-                            )}
-                        </ListItemButton>
-                        <Collapse in={quizOpen} timeout="auto" unmountOnExit>
-                            <List component="div" disablePadding>
-                                <ListItemButton
-                                    sx={{ pl: 4 }}
-                                    component={Link}
-                                    to="/kuis"
-                                >
-                                    <ListItemText>
-                                        <Typography className="text-white font-quantico">
-                                            Mulai kuis
-                                        </Typography>
-                                    </ListItemText>
-                                </ListItemButton>
-                                <ListItemButton
-                                    sx={{ pl: 4 }}
-                                    component={Link}
-                                    to="/kuis/skor-tinggi"
-                                >
-                                    <ListItemText>
-                                        <Typography className="text-white font-quantico">
-                                            Lihat skor tinggi
-                                        </Typography>
-                                    </ListItemText>
-                                </ListItemButton>
-                            </List>
-                        </Collapse>
+                        </ListItem>
+
                         <ListItem component={Link} to="/animasi">
                             <ListItemText>
                                 <Typography className="text-white font-quantico font-bold">
@@ -181,7 +152,7 @@ const Navbar = (props) => {
                     </List>
                 </Box>
                 <Box
-                    className={`flex-1 ml-4 h-screen w-screen transition-all ease-in-out duration-500 ${
+                    className={`flex-1 h-screen w-screen transition-all ease-in-out duration-500 ${
                         sidebarOpen ? "transform ml-52" : "transform ml-4"
                     }`}
                 >

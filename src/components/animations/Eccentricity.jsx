@@ -65,15 +65,29 @@ const Eccentricity = (props) => {
         return "";
     };
 
+    const style = {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+    };
+
+    const previewStyle = {
+        // position: "absolute",
+        // top: 0,
+        // left: 0,
+        // right: 0,
+        // bottom: 0,
+        transform: "scale(0.25)",
+    };
+
+    const mergedStyle = {
+        ...style,
+        ...(props?.preview && previewStyle),
+    };
+
     return (
-        <div
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                transform: props?.preview ? "scale(0.25)" : "",
-            }}
-        >
+        <div style={mergedStyle}>
+            {console.log(mergedStyle)}
             <div
                 onMouseOver={() => setIsHovered(true)}
                 onMouseOut={() => setIsHovered(false)}
@@ -114,33 +128,33 @@ const Eccentricity = (props) => {
                     />
                 </Box>
             </div>
-            {!props?.preview && (
-                <div style={{ width: "100%", margin: "auto" }}>
-                    <Slider
-                        max={2}
-                        min={0}
-                        size="small"
-                        marks={marks.map((mark, i) => ({
-                            ...mark,
-                            label: (
-                                <Typography
-                                    className={`text-[12px] font-quantico font-bold -m-2 ${sliderLabelPlacement(
-                                        i
-                                    )}`}
-                                >
-                                    {mark.label}
-                                </Typography>
-                            ),
-                        }))}
-                        step={0.01}
-                        value={ecc}
-                        valueLabelDisplay="auto"
-                        onChange={(e, val) => {
-                            setEcc(val);
-                        }}
-                    />
-                </div>
-            )}
+            (
+            <div style={{ width: "100%", margin: "auto" }}>
+                <Slider
+                    max={2}
+                    min={0}
+                    size="small"
+                    marks={marks.map((mark, i) => ({
+                        ...mark,
+                        label: (
+                            <Typography
+                                className={`text-[12px] font-quantico font-bold -m-2 ${sliderLabelPlacement(
+                                    i
+                                )}`}
+                            >
+                                {mark.label}
+                            </Typography>
+                        ),
+                    }))}
+                    step={0.01}
+                    value={ecc}
+                    valueLabelDisplay="auto"
+                    onChange={(e, val) => {
+                        setEcc(val);
+                    }}
+                />
+            </div>
+            )
         </div>
     );
 };

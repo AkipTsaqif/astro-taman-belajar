@@ -8,10 +8,25 @@ const Home = () => {
     const [isLoginClicked, setIsLoginClicked] = useState(false);
 
     return (
-        <Box>
-            <Navbar>
-                <SolarSystem />
-                {/* <Box
+        <Navbar>
+            <Box className="m-auto">
+                <Box className="mx-auto mb-4">
+                    <Typography className="uppercase font-bold font-bebas text-6xl text-center">
+                        Astronomi dan Angkasa Luar
+                    </Typography>
+                </Box>
+                <Box className="mx-auto max-w-2xl">
+                    <Typography className="italic text-justify mb-2">
+                        Two possibilities exist: either we are alone in the
+                        universe or we are not. Both are equally terrifying.
+                    </Typography>
+                    <Typography className="italic font-bold">
+                        — Arthur C. Clark
+                    </Typography>
+                </Box>
+            </Box>
+            {/* <SolarSystem /> */}
+            {/* <Box
                     sx={{
                         position: "absolute",
                         top: "50%",
@@ -64,8 +79,7 @@ const Home = () => {
                         {isLoginClicked ? <Login /> : null}
                     </Box>
                 </Box> */}
-            </Navbar>
-        </Box>
+        </Navbar>
     );
 };
 

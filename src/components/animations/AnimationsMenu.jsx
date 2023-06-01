@@ -12,14 +12,19 @@ const AnimationMenu = (props) => {
                     Kumpulan Animasi
                 </Typography>
                 <Box className="flex flex-col">
-                    {animationsPlaceholder.map((anim) => {
+                    {animationsPlaceholder.map((anim, i) => {
                         return (
                             <>
-                                <Box className="border-2 border-binus w-1/4 px-2">
-                                    {anim}
+                                <Box className="w-1/4 px-8 py-1 border-t-2 border-x-2 border-binus rounded-t-full">
+                                    <Typography className="font-bold font-quantico">
+                                        {anim}
+                                    </Typography>
                                 </Box>
-                                <Box className="w-full h-36 border-2 border-binus mb-2">
-                                    <Eccentricity preview={true} />
+                                <Box className="relative w-full h-36 border-2 border-binus mb-4">
+                                    <img
+                                        src="/images/ecc-prev.png"
+                                        className="absolute inset-0 w-full h-full object-contain"
+                                    />
                                 </Box>
                             </>
                         );

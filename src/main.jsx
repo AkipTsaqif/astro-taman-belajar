@@ -9,6 +9,7 @@ import "./index.css";
 import { CssBaseline } from "@mui/material";
 import Chapter from "./components/chapter/Chapter";
 import AnimationsMenu from "./components/animations/AnimationsMenu";
+import Quiz from "./components/quiz/Quiz";
 
 const router = createBrowserRouter([
     {
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
     {
         path: "/materi/nama-materi",
         element: <Chapter />,
+    },
+    {
+        path: "/kuis",
+        element: <Quiz />,
     },
     {
         path: "/animasi",
