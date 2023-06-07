@@ -1,5 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import Eccentricity from "../animations/Eccentricity";
+import SolarSystem from "../animations/SolarSystem";
 import Navbar from "../../shared-components/Navbar";
 import AnimationPane from "../../shared-components/AnimationPane";
 
@@ -42,7 +43,7 @@ const Chapter = (props) => {
             </Box>
 
             <Box className="border-l-2 border-solid border-binus">
-                <AnimationPane className="mt-4" kind={<Eccentricity />} />
+                <AnimationPane className="mt-4" kind={<SolarSystem />} />
             </Box>
         </Navbar>
     );

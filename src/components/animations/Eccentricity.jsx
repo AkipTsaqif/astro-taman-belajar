@@ -128,7 +128,6 @@ const Eccentricity = (props) => {
                     />
                 </Box>
             </div>
-            (
             <div style={{ width: "100%", margin: "auto" }}>
                 <Slider
                     max={2}
@@ -154,7 +153,6 @@ const Eccentricity = (props) => {
                     }}
                 />
             </div>
-            )
         </div>
     );
 };
