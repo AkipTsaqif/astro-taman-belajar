@@ -17,7 +17,7 @@ const router = createBrowserRouter([
         element: <Home />,
     },
     {
-        path: "/solar-system",
+        path: "/tata-surya",
         element: <SolarSystem />,
     },
     {

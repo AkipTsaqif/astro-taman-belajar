@@ -1,12 +1,22 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Breadcrumbs, Button, Slider, Typography } from "@mui/material";
+import {
+    Box,
+    Breadcrumbs,
+    Button,
+    IconButton,
+    Slider,
+    Typography,
+} from "@mui/material";
+import { Link } from "react-router-dom";
+import _ from "lodash";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import SettingsIcon from "@mui/icons-material/Settings";
+import CloseIcon from "@mui/icons-material/Close";
 import useDidMountEffect from "../../hooks/useDidMountEffect";
 import Navbar from "../../shared-components/Navbar";
 import AnimationControls from "../../shared-components/AnimationControls";
+import PlanetAnnotation from "./extra-components/PlanetAnnotation";
 import randomize from "../../utilities/randomize";
-import { Link } from "react-router-dom";
 
 const planetData = [
     {
@@ -15,6 +25,16 @@ const planetData = [
         smi: 10,
         startPos: randomize(0, 360),
         orbitSpeed: 0.004,
+        details: {
+            name: "Merkurius",
+            distance: "57.9 juta km",
+            eccentricity: "0.2056",
+            diameter: "4,879 km",
+            rotationPeriod: "58.6 hari",
+            revolutionPeriod: "88 hari",
+            moons: 0,
+            discovered: "- (diketahui sejak dahulu)",
+        },
     },
     {
         id: "venus-orbit",
@@ -22,6 +42,16 @@ const planetData = [
         smi: 17,
         startPos: randomize(0, 360),
         orbitSpeed: 0.001,
+        details: {
+            name: "Venus",
+            distance: "108.2 juta km",
+            eccentricity: "0.0068",
+            diameter: "12,104 km",
+            rotationPeriod: "243 hari",
+            revolutionPeriod: "225 hari",
+            moons: 0,
+            discovered: "- (diketahui sejak dahulu)",
+        },
     },
     {
         id: "earth-orbit",
@@ -29,6 +59,16 @@ const planetData = [
         smi: 26,
         startPos: randomize(0, 360),
         orbitSpeed: 0.0005,
+        details: {
+            name: "Bumi",
+            distance: "149.6 juta km",
+            eccentricity: "0.0167",
+            diameter: "12,742 km",
+            rotationPeriod: "24 jam",
+            revolutionPeriod: "365.25 hari",
+            moons: 1,
+            discovered: "- (diketahui sejak dahulu)",
+        },
     },
     {
         id: "mars-orbit",
@@ -36,6 +76,16 @@ const planetData = [
         smi: 43,
         startPos: randomize(0, 360),
         orbitSpeed: 0.0001,
+        details: {
+            name: "Mars",
+            distance: "227.9 juta km",
+            eccentricity: "0.0934",
+            diameter: "6,779 km",
+            rotationPeriod: "24.6 jam",
+            revolutionPeriod: "687 hari",
+            moons: 2,
+            discovered: "- (diketahui sejak dahulu)",
+        },
     },
     {
         id: "jupiter-orbit",
@@ -43,6 +93,16 @@ const planetData = [
         smi: 97,
         startPos: randomize(0, 360),
         orbitSpeed: 0.00001,
+        details: {
+            name: "Jupiter",
+            distance: "778.6 juta km",
+            eccentricity: "0.0484",
+            diameter: "139,820 km",
+            rotationPeriod: "9.9 jam",
+            revolutionPeriod: "11.9 tahun",
+            moons: 79,
+            discovered: "- (diketahui sejak dahulu)",
+        },
     },
     {
         id: "saturn-orbit",
@@ -50,6 +110,16 @@ const planetData = [
         smi: 197,
         startPos: randomize(0, 360),
         orbitSpeed: 0.000003,
+        details: {
+            name: "Saturnus",
+            distance: "1.4 milyar km",
+            eccentricity: "0.0556",
+            diameter: "116,460 km",
+            rotationPeriod: "10.7 jam",
+            revolutionPeriod: "29.5 tahun",
+            moons: 82,
+            discovered: "- (diketahui sejak dahulu)",
+        },
     },
     {
         id: "uranus-orbit",
@@ -57,6 +127,16 @@ const planetData = [
         smi: 395,
         startPos: randomize(0, 360),
         orbitSpeed: 0.0000006,
+        details: {
+            name: "Uranus",
+            distance: "2.9 milyar km",
+            eccentricity: "0.0444",
+            diameter: "50,724 km",
+            rotationPeriod: "17.2 jam",
+            revolutionPeriod: "84 tahun",
+            moons: 27,
+            discovered: "1781",
+        },
     },
     {
         id: "neptune-orbit",
@@ -64,6 +144,16 @@ const planetData = [
         smi: 595,
         startPos: randomize(0, 360),
         orbitSpeed: 0.0000001,
+        details: {
+            name: "Neptunus",
+            distance: "4.5 milyar km",
+            eccentricity: "0.0112",
+            diameter: "49,244 km",
+            rotationPeriod: "16.1 jam",
+            revolutionPeriod: "165 tahun",
+            moons: 14,
+            discovered: "1846",
+        },
     },
 ];
 
@@ -71,18 +161,32 @@ const SolarSystem = (props) => {
     const [player, setPlayer] = useState(0);
     const [elapsedTime, setElapsedTime] = useState(0);
     const [isPanning, setIsPanning] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
+
+    const animRef = useRef(null);
+    const playerRef = useRef(player);
+    const elapsedRef = useRef(elapsedTime);
 
     const pathnames = location.pathname.split("/").filter((x) => x);
 
     const [overlay, setOverlay] = useState(true);
     const [zoom, setZoom] = useState(1);
+    const [zoomClicked, setZoomClicked] = useState(false);
+    const [panClicked, setPanClicked] = useState(false);
     const [selectedPlanet, setSelectedPlanet] = useState(null);
+    const [selectedPlanetDetails, setSelectedPlanetDetails] = useState(null);
+    const [selectedPlanetCoords, setSelectedPlanetCoords] = useState({
+        x: 0,
+        y: 0,
+    });
     const [centerOffset, setCenterOffset] = useState({
         offsetX: 0,
         offsetY: 0,
     });
     const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
-    const [endPoint, setEndPoint] = useState({ x: 0, y: 0 });
+
+    var viewBox = { x: 0, y: 0, w: 1400, h: 1400 };
+    var prevD = 0;
 
     // useEffect(() => {
     //     const animate = setInterval(() => {
@@ -108,14 +212,11 @@ const SolarSystem = (props) => {
     //     };
     // }, [player]);
 
-    const animate = () => {
-        setPlayer(player + 1);
-        setElapsedTime(
-            (prevElapsedTime) => prevElapsedTime + 0.05 / (zoom * 4)
-        );
+    const animate = (timestamp) => {
+        animRef.current = requestAnimationFrame(animate);
 
         planetData.map(({ id, sma, smi, orbitSpeed, startPos }, i) => {
-            const updatedStartPos = startPos - orbitSpeed * elapsedTime;
+            const updatedStartPos = startPos - orbitSpeed * elapsedRef.current;
 
             const xPos = 700 + sma * Math.cos(updatedStartPos);
             const yPos = 700 + smi * Math.sin(updatedStartPos);
@@ -125,21 +226,42 @@ const SolarSystem = (props) => {
             );
             orbitingPlanet.setAttribute("cx", xPos);
             orbitingPlanet.setAttribute("cy", yPos);
-        });
 
-        requestAnimationFrame(animate);
+            if (i === 0) console.log(updatedStartPos);
+        });
     };
 
     useEffect(() => {
-        const animation = requestAnimationFrame(animate);
+        const anim = requestAnimationFrame(animate);
+
+        animRef.current = anim;
 
         return () => {
-            cancelAnimationFrame(animation);
+            cancelAnimationFrame(animRef.current);
         };
-    }, [player]);
+    }, []);
+
+    useEffect(() => {
+        console.log("ini jalna");
+        if (!isPaused) {
+            setPlayer(player + 1);
+            setElapsedTime(
+                (prevElapsedTime) => prevElapsedTime + 0.1 / (zoom * 4)
+            );
+
+            playerRef.current = player;
+            elapsedRef.current = elapsedTime;
+        }
+    }, [player, isPaused]);
 
     const getPlanetLocation = (id) => {
-        const circleElement = document.getElementById(id);
+        setSelectedPlanetDetails(
+            _.find(planetData, {
+                id: id,
+            })
+        );
+        const planetName = id.replace("-orbit", "");
+        const circleElement = document.getElementById(planetName);
         const svgElement = document.getElementById("svgContainer");
 
         if (circleElement && svgElement) {
@@ -151,18 +273,55 @@ const SolarSystem = (props) => {
             const offsetY =
                 circleRect.top + circleRect.height / 2 - svgHeight / 2;
 
-            // console.log(offsetX);
             setCenterOffset({ offsetX, offsetY });
+            setSelectedPlanetCoords({
+                x: circleRect.left + circleRect.width / 2,
+                y: circleRect.top + circleRect.height / 2,
+            });
         }
     };
 
     const calculateViewBox = () => {
         const viewBoxSize = 1400 / zoom; // Calculate the adjusted viewBox size
-        const viewBoxOffsetX =
-            (1400 - viewBoxSize) / 1.55 - centerOffset.offsetX / 36; // Calculate the offset to center the viewBox
-        console.log(1400 - viewBoxSize);
-        const viewBoxOffsetY =
-            (1400 - viewBoxSize) / 1.55 - centerOffset.offsetY / 36;
+        // const viewBoxOffsetX =
+        //     (1400 - viewBoxSize) / 1.55 - centerOffset.offsetX / 36; // Calculate the offset to center the viewBox
+        // const viewBoxOffsetY =
+        //     (1400 - viewBoxSize) / 1.55 - centerOffset.offsetY / 36;
+
+        let viewBoxOffsetY;
+        let viewBoxOffsetX; // Calculate the offset to center the viewBox
+        // 2 = 1.7
+        // 3 = 1.58
+        // 4 = 1.62
+        // 5 = 1.67
+        if (zoom === 1) {
+            viewBoxOffsetX = 1400 - viewBoxSize;
+            viewBoxOffsetY = 1400 - viewBoxSize;
+        }
+        if (zoom === 2) {
+            viewBoxOffsetX = (1400 - viewBoxSize) / 1.67;
+            viewBoxOffsetY = (1400 - viewBoxSize) / 1.35;
+        }
+        if (zoom === 3) {
+            viewBoxOffsetX = (1400 - viewBoxSize) / 1.58;
+            viewBoxOffsetY = (1400 - viewBoxSize) / 1.5;
+        }
+        if (zoom === 4) {
+            viewBoxOffsetX = (1400 - viewBoxSize) / 1.62;
+            viewBoxOffsetY = (1400 - viewBoxSize) / 1.6;
+        }
+        if (zoom === 5) {
+            viewBoxOffsetX = (1400 - viewBoxSize) / 1.67;
+            viewBoxOffsetY = (1400 - viewBoxSize) / 1.667;
+        }
+
+        viewBox = {
+            x: viewBoxOffsetX,
+            y: viewBoxOffsetY,
+            w: viewBoxSize,
+            h: viewBoxSize,
+        };
+
         return `${viewBoxOffsetX} ${viewBoxOffsetY} ${viewBoxSize} ${viewBoxSize}`;
     };
 
@@ -170,36 +329,85 @@ const SolarSystem = (props) => {
         if (selectedPlanet) {
             getPlanetLocation(selectedPlanet);
             calculateViewBox();
-            console.log("ini jalan");
         }
     }, [selectedPlanet, player]);
 
     const svgOnMouseDown = (e) => {
         setIsPanning(true);
-        setStartPoint({ x: e.x, y: e.y });
+        setStartPoint({ x: e.clientX, y: e.clientY });
     };
 
     const svgOnMouseMove = (e) => {
+        let svg = document.getElementById("svgContainer");
+
         if (isPanning) {
-            setEndPoint({ x: e.x, y: e.y });
-            let dx = startPoint.x - endPoint;
+            let endPoint = { x: e.clientX, y: e.clientY };
+            let dx = startPoint.x - endPoint.x;
+            let dy = startPoint.y - endPoint.y;
+            let movedVB = {
+                x: viewBox.x + dx,
+                y: viewBox.y + dy,
+                w: viewBox.w,
+                h: viewBox.h,
+            };
+
+            svg.setAttribute(
+                "viewBox",
+                `${movedVB.x} ${movedVB.y} ${movedVB.w} ${movedVB.h}`
+            );
         }
     };
 
-    // useEffect(() => {
-    //     if (isPlay) setAngle(angle - 0.001);
-    // }, [angle, isPlay]);
+    const svgOnMouseUp = (e) => {
+        let svg = document.getElementById("svgContainer");
+
+        if (isPanning) {
+            let endPoint = { x: e.clientX, y: e.clientY };
+            let dx = startPoint.x - endPoint.x;
+            let dy = startPoint.y - endPoint.y;
+            let movedVB = {
+                x: viewBox.x + dx,
+                y: viewBox.y + dy,
+                w: viewBox.w,
+                h: viewBox.h,
+            };
+            svg.setAttribute(
+                "viewBox",
+                `${movedVB.x} ${movedVB.y} ${movedVB.w} ${movedVB.h}`
+            );
+        }
+
+        setIsPanning(false);
+    };
+
     return (
         <>
             <Box className="fixed top-0 w-full bg-transparent z-10">
-                <Box id="topbar" className="flex flex-col px-2">
+                <Box id="topbar" className="flex flex-col p-3">
                     <Typography
                         className="text-white text-2xl font-bold font-bebas"
                         variant="h6"
                     >
                         Astronomi dan Angkasa Luar
                     </Typography>
-                    <Breadcrumbs
+                    <Box className="flex w-2/3">
+                        <Link
+                            to="/tata-surya"
+                            key="sol"
+                            className="font-quantico capitalize font-bold text-white w-1/12"
+                        >
+                            Home
+                        </Link>
+                        <Link
+                            to="/tata-surya"
+                            key="kuis"
+                            className="font-quantico capitalize font-bold text-white w-1/12"
+                        >
+                            Kuis
+                        </Link>
+                    </Box>
+
+                    {/* <Breadcrumbs
                         separator={
                             <ArrowRightAltIcon fontSize="small" color="white" />
                         }
@@ -229,7 +437,7 @@ const SolarSystem = (props) => {
                                 </Link>
                             );
                         })}
-                    </Breadcrumbs>
+                    </Breadcrumbs> */}
                 </Box>
             </Box>
             <Box id="svg" className="overflow-y-hidden max-h-screen bg-black">
@@ -241,12 +449,19 @@ const SolarSystem = (props) => {
                     >
                         <svg
                             id="svgContainer"
-                            viewBox={calculateViewBox()}
+                            viewBox={
+                                zoomClicked
+                                    ? calculateViewBox()
+                                    : "0 0 1400 1400"
+                            }
                             width={`${60 * zoom}vw`}
                             height={`${100 * zoom}vh`}
-                            className="mx-auto"
+                            className={`mx-auto ${
+                                isPanning ? "cursor-grabbing" : "cursor-grab"
+                            }`}
                             onMouseDown={(e) => svgOnMouseDown(e)}
                             onMouseMove={(e) => svgOnMouseMove(e)}
+                            onMouseUp={(e) => svgOnMouseUp(e)}
                         >
                             <circle
                                 cx="700"
@@ -272,20 +487,44 @@ const SolarSystem = (props) => {
                                         id={id.replace("-orbit", "")}
                                         r={2 / (zoom / 1.5)}
                                         fill="red"
-                                        onClick={() =>
-                                            setSelectedPlanet(
-                                                id.replace("-orbit", "")
-                                            )
-                                        }
+                                        onClick={() => {
+                                            setSelectedPlanet(id);
+                                            setIsPaused(true);
+                                        }}
                                     />
                                 </React.Fragment>
                             ))}
                         </svg>
+                        {selectedPlanet && (
+                            <Box
+                                // className={`absolute top-[${
+                                //     selectedPlanetCoords.y - 50
+                                // }px] left-[${
+                                //     selectedPlanetCoords.x + 20
+                                // }px] bg-white p-[10px]`}
+                                className="absolute w-1/4 top-8 right-72 bg-black/50 p-2 border-2 border-gray-500"
+                            >
+                                <PlanetAnnotation
+                                    details={selectedPlanetDetails}
+                                />
+                                <IconButton
+                                    className="absolute top-0 right-0 z-50 p-2"
+                                    size="small"
+                                    onClick={() => {
+                                        setIsPaused(false);
+                                        setSelectedPlanet(null);
+                                        setSelectedPlanetDetails(null);
+                                    }}
+                                >
+                                    <CloseIcon className="text-white" />
+                                </IconButton>
+                            </Box>
+                        )}
                         <Box
                             id="right-sidebar"
                             className={`absolute transform ${
                                 overlay ? "translate-x-0" : "translate-x-3/4"
-                            } w-1/4 top-0 right-0 h-full bg-transparent flex transition-transform duration-300`}
+                            } w-1/4 top-0 right-0 h-90vh bg-transparent flex transition-transform duration-300 z-40`}
                         >
                             <Box className="w-1/4 h-full bg-transparent rounded-l-full">
                                 <div className="flex justify-start items-center h-screen">
@@ -304,20 +543,36 @@ const SolarSystem = (props) => {
                                 </div>
                             </Box>
                             <div className="w-3/4 bg-transparent border-l-2 border-y-2 my-6 border-gray-500">
-                                <Button
-                                    variant="filled"
-                                    onClick={() => setZoom((prev) => prev + 1)}
-                                    className="text-white"
+                                <button
+                                    onClick={() => {
+                                        setZoom((prev) => prev + 1);
+                                        setZoomClicked(true);
+                                    }}
+                                    className="rounded-lg bg-transparent mt-2 mx-2 p-2 border-2 border-gray-500"
                                 >
-                                    Zoom IN
-                                </Button>
-                                <Button
-                                    variant="filled"
-                                    onClick={() => setZoom((prev) => prev - 1)}
-                                    className="text-white"
+                                    <Typography className="font-bold font-quantico text-white">
+                                        Perbesar
+                                    </Typography>
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setZoom((prev) => prev - 1);
+                                        setZoomClicked(true);
+                                    }}
+                                    className="rounded-lg bg-transparent p-2 border-2 border-gray-500"
                                 >
-                                    Zoom OUT
-                                </Button>
+                                    <Typography className="font-bold font-quantico text-white">
+                                        Perkecil
+                                    </Typography>
+                                </button>
+                                <button
+                                    onClick={() => setIsPaused(!isPaused)}
+                                    className="rounded-lg bg-transparent p-2 border-2 mt-2 mx-2 border-gray-500"
+                                >
+                                    <Typography className="font-bold font-quantico text-white">
+                                        Pause/Play
+                                    </Typography>
+                                </button>
                             </div>
                         </Box>
                     </div>
