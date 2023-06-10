@@ -1,8 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
     Box,
     Breadcrumbs,
     Button,
+    Checkbox,
+    FormControlLabel,
     IconButton,
     Slider,
     Typography,
@@ -163,10 +165,6 @@ const SolarSystem = (props) => {
     const [isPanning, setIsPanning] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
 
-    const animRef = useRef(null);
-    const playerRef = useRef(player);
-    const elapsedRef = useRef(elapsedTime);
-
     const pathnames = location.pathname.split("/").filter((x) => x);
 
     const [overlay, setOverlay] = useState(true);
@@ -184,6 +182,8 @@ const SolarSystem = (props) => {
         offsetY: 0,
     });
     const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
+
+    const [eccChecked, setEccChecked] = useState(false);
 
     var viewBox = { x: 0, y: 0, w: 1400, h: 1400 };
     var prevD = 0;
@@ -212,47 +212,40 @@ const SolarSystem = (props) => {
     //     };
     // }, [player]);
 
-    const animate = (timestamp) => {
-        animRef.current = requestAnimationFrame(animate);
-
-        planetData.map(({ id, sma, smi, orbitSpeed, startPos }, i) => {
-            const updatedStartPos = startPos - orbitSpeed * elapsedRef.current;
-
-            const xPos = 700 + sma * Math.cos(updatedStartPos);
-            const yPos = 700 + smi * Math.sin(updatedStartPos);
-
-            const orbitingPlanet = document.getElementById(
-                id.replace("-orbit", "")
-            );
-            orbitingPlanet.setAttribute("cx", xPos);
-            orbitingPlanet.setAttribute("cy", yPos);
-
-            if (i === 0) console.log(updatedStartPos);
-        });
-    };
-
-    useEffect(() => {
-        const anim = requestAnimationFrame(animate);
-
-        animRef.current = anim;
-
-        return () => {
-            cancelAnimationFrame(animRef.current);
-        };
-    }, []);
-
-    useEffect(() => {
-        console.log("ini jalna");
+    useLayoutEffect(() => {
         if (!isPaused) {
-            setPlayer(player + 1);
-            setElapsedTime(
-                (prevElapsedTime) => prevElapsedTime + 0.1 / (zoom * 4)
-            );
+            let anim;
 
-            playerRef.current = player;
-            elapsedRef.current = elapsedTime;
+            const animate = () => {
+                setPlayer((p) => p + 1);
+                setElapsedTime(
+                    (prevElapsedTime) => prevElapsedTime + 25 / (zoom * 4)
+                );
+
+                anim = requestAnimationFrame(animate);
+            };
+
+            anim = requestAnimationFrame(animate);
+            return () => cancelAnimationFrame(anim);
         }
-    }, [player, isPaused]);
+    }, [isPaused]);
+
+    useEffect(() => {
+        if (!eccChecked) {
+            planetData.map(({ id, sma, smi, orbitSpeed, startPos }, i) => {
+                const updatedStartPos = startPos - orbitSpeed * elapsedTime;
+
+                const xPos = 700 + sma * Math.cos(updatedStartPos);
+                const yPos = 700 + smi * Math.sin(updatedStartPos);
+
+                const orbitingPlanet = document.getElementById(
+                    id.replace("-orbit", "")
+                );
+                orbitingPlanet.setAttribute("cx", xPos);
+                orbitingPlanet.setAttribute("cy", yPos);
+            });
+        }
+    }, [player]);
 
     const getPlanetLocation = (id) => {
         setSelectedPlanetDetails(
@@ -331,6 +324,69 @@ const SolarSystem = (props) => {
             calculateViewBox();
         }
     }, [selectedPlanet, player]);
+
+    useEffect(() => {
+        if (eccChecked) {
+            setZoom(4);
+            setZoomClicked(true);
+            setSelectedPlanetDetails(
+                _.find(planetData, {
+                    id: "earth-orbit",
+                })
+            );
+            console.log(
+                _.find(planetData, {
+                    id: "earth-orbit",
+                })
+            );
+        } else {
+            setZoom(1);
+            setZoomClicked(true);
+        }
+    }, [eccChecked]);
+
+    const showSolarSystem = () => {
+        if (eccChecked)
+            return (
+                <React.Fragment key="earth">
+                    <ellipse
+                        id="earth-orbit"
+                        cx="700"
+                        cy="700"
+                        rx={selectedPlanetDetails?.sma}
+                        ry={selectedPlanetDetails?.smi}
+                        stroke="gray"
+                        strokeWidth={1 / zoom}
+                        fill="none"
+                    />
+                    <circle id="earth" r={2 / (zoom / 1.5)} fill="red" />
+                </React.Fragment>
+            );
+        else
+            return planetData.map(({ id, sma, smi }) => (
+                <React.Fragment key={id}>
+                    <ellipse
+                        id={id}
+                        cx="700"
+                        cy="700"
+                        rx={sma}
+                        ry={smi}
+                        stroke="gray"
+                        strokeWidth={1 / zoom}
+                        fill="none"
+                    />
+                    <circle
+                        id={id.replace("-orbit", "")}
+                        r={2 / (zoom / 1.5)}
+                        fill="red"
+                        onClick={() => {
+                            setSelectedPlanet(id);
+                            setIsPaused(true);
+                        }}
+                    />
+                </React.Fragment>
+            ));
+    };
 
     const svgOnMouseDown = (e) => {
         setIsPanning(true);
@@ -471,29 +527,7 @@ const SolarSystem = (props) => {
                                 strokeWidth="0.1"
                                 fill="yellow"
                             />
-                            {planetData.map(({ id, sma, smi }) => (
-                                <React.Fragment key={id}>
-                                    <ellipse
-                                        id={id}
-                                        cx="700"
-                                        cy="700"
-                                        rx={sma}
-                                        ry={smi}
-                                        stroke="gray"
-                                        strokeWidth={1 / zoom}
-                                        fill="none"
-                                    />
-                                    <circle
-                                        id={id.replace("-orbit", "")}
-                                        r={2 / (zoom / 1.5)}
-                                        fill="red"
-                                        onClick={() => {
-                                            setSelectedPlanet(id);
-                                            setIsPaused(true);
-                                        }}
-                                    />
-                                </React.Fragment>
-                            ))}
+                            {showSolarSystem()}
                         </svg>
                         {selectedPlanet && (
                             <Box
@@ -573,6 +607,24 @@ const SolarSystem = (props) => {
                                         Pause/Play
                                     </Typography>
                                 </button>
+                                <div className="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        value="Eksentrisitas"
+                                        className="m-4 w-5 h-5"
+                                        onChange={() => {
+                                            if (!eccChecked) {
+                                                setZoom(4);
+                                                setZoomClicked(true);
+                                            }
+                                            setEccChecked(!eccChecked);
+                                        }}
+                                        checked={eccChecked}
+                                    />
+                                    <label className="text-white font-quantico font-bold">
+                                        Eksentrisitas
+                                    </label>
+                                </div>
                             </div>
                         </Box>
                     </div>
