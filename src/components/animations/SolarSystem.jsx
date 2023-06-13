@@ -159,6 +159,21 @@ const planetData = [
     },
 ];
 
+const marks = [
+    {
+        value: 0,
+        label: "Lingkaran",
+    },
+    {
+        value: 1,
+        label: "Parabola",
+    },
+    {
+        value: 2,
+        label: "Hiperbola",
+    },
+];
+
 const SolarSystem = (props) => {
     const [player, setPlayer] = useState(0);
     const [elapsedTime, setElapsedTime] = useState(0);
@@ -183,10 +198,16 @@ const SolarSystem = (props) => {
     });
     const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
 
+    const [ecc, setEcc] = useState(0);
+    const [starRadius, setStarRadius] = useState(700);
+    const [starTemp, setStarTemp] = useState(5772);
+    const [starMass, setStarMass] = useState(1);
+
     const [eccChecked, setEccChecked] = useState(false);
+    const [starChecked, setStarChecked] = useState(false);
 
     var viewBox = { x: 0, y: 0, w: 1400, h: 1400 };
-    var prevD = 0;
+    const factor = { x: 85, y: 50 };
 
     // useEffect(() => {
     //     const animate = setInterval(() => {
@@ -244,8 +265,26 @@ const SolarSystem = (props) => {
                 orbitingPlanet.setAttribute("cx", xPos);
                 orbitingPlanet.setAttribute("cy", yPos);
             });
+        } else {
+            const updatedStartPos =
+                selectedPlanetDetails?.startPos -
+                selectedPlanetDetails?.orbitSpeed * elapsedTime;
+
+            const xPos =
+                700 -
+                factor.x * ecc +
+                (selectedPlanetDetails?.sma + factor.x * ecc) *
+                    Math.cos(updatedStartPos);
+            const yPos =
+                700 +
+                (selectedPlanetDetails?.smi + factor.y * ecc) *
+                    Math.sin(updatedStartPos);
+
+            const orbitingPlanet = document.getElementById("earth");
+            orbitingPlanet.setAttribute("cx", xPos);
+            orbitingPlanet.setAttribute("cy", yPos);
         }
-    }, [player]);
+    }, [player, ecc]);
 
     const getPlanetLocation = (id) => {
         setSelectedPlanetDetails(
@@ -318,6 +357,12 @@ const SolarSystem = (props) => {
         return `${viewBoxOffsetX} ${viewBoxOffsetY} ${viewBoxSize} ${viewBoxSize}`;
     };
 
+    const sliderLabelPlacement = (index) => {
+        if (index === 0) return "ml-8";
+        if (index === marks.length - 1) return "mr-8";
+        return "";
+    };
+
     useEffect(() => {
         if (selectedPlanet) {
             getPlanetLocation(selectedPlanet);
@@ -339,22 +384,19 @@ const SolarSystem = (props) => {
                     id: "earth-orbit",
                 })
             );
-        } else {
-            setZoom(1);
-            setZoomClicked(true);
         }
     }, [eccChecked]);
 
     const showSolarSystem = () => {
         if (eccChecked)
             return (
-                <React.Fragment key="earth">
+                <React.Fragment>
                     <ellipse
                         id="earth-orbit"
-                        cx="700"
+                        cx={700 - factor.x * ecc}
                         cy="700"
-                        rx={selectedPlanetDetails?.sma}
-                        ry={selectedPlanetDetails?.smi}
+                        rx={selectedPlanetDetails?.sma + factor.x * ecc}
+                        ry={selectedPlanetDetails?.smi + factor.y * ecc}
                         stroke="gray"
                         strokeWidth={1 / zoom}
                         fill="none"
@@ -529,6 +571,7 @@ const SolarSystem = (props) => {
                             />
                             {showSolarSystem()}
                         </svg>
+
                         {selectedPlanet && (
                             <Box
                                 // className={`absolute top-[${
@@ -561,9 +604,9 @@ const SolarSystem = (props) => {
                             } w-1/4 top-0 right-0 h-90vh bg-transparent flex transition-transform duration-300 z-40`}
                         >
                             <Box className="w-1/4 h-full bg-transparent rounded-l-full">
-                                <div className="flex justify-start items-center h-screen">
+                                <div className="flex relative mr-24 justify-end items-center h-screen">
                                     <div
-                                        className="flex justify-around items-center -ml-[11px] border-2 border-gray-500 px-8 rounded-t-2xl text-center transform -rotate-90"
+                                        className="flex absolute left-1/4 origin-center -rotate-90 justify-around items-center border-2 border-gray-500 px-8 rounded-t-2xl text-center transform"
                                         onClick={() => setOverlay(!overlay)}
                                     >
                                         <Typography className="text-white font-quantico px-2">
@@ -577,54 +620,130 @@ const SolarSystem = (props) => {
                                 </div>
                             </Box>
                             <div className="w-3/4 bg-transparent border-l-2 border-y-2 my-6 border-gray-500">
-                                <button
-                                    onClick={() => {
-                                        setZoom((prev) => prev + 1);
-                                        setZoomClicked(true);
-                                    }}
-                                    className="rounded-lg bg-transparent mt-2 mx-2 p-2 border-2 border-gray-500"
-                                >
-                                    <Typography className="font-bold font-quantico text-white">
-                                        Perbesar
+                                <Box className="flex items-center justify-center mb-2">
+                                    <Typography className="uppercase font-bold font-quantico text-white text-center rounded-b-xl border-b-2 border-x-2 border-gray-500 py-1 w-5/12">
+                                        Kontrol
                                     </Typography>
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setZoom((prev) => prev - 1);
-                                        setZoomClicked(true);
-                                    }}
-                                    className="rounded-lg bg-transparent p-2 border-2 border-gray-500"
-                                >
-                                    <Typography className="font-bold font-quantico text-white">
-                                        Perkecil
-                                    </Typography>
-                                </button>
-                                <button
-                                    onClick={() => setIsPaused(!isPaused)}
-                                    className="rounded-lg bg-transparent p-2 border-2 mt-2 mx-2 border-gray-500"
-                                >
-                                    <Typography className="font-bold font-quantico text-white">
-                                        Pause/Play
-                                    </Typography>
-                                </button>
-                                <div className="flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        value="Eksentrisitas"
-                                        className="m-4 w-5 h-5"
-                                        onChange={() => {
-                                            if (!eccChecked) {
-                                                setZoom(4);
-                                                setZoomClicked(true);
-                                            }
-                                            setEccChecked(!eccChecked);
+                                </Box>
+                                <Box>
+                                    <button
+                                        onClick={() => {
+                                            setZoom((prev) => prev + 1);
+                                            if (zoom > 4) setZoom(5);
+                                            setZoomClicked(true);
                                         }}
-                                        checked={eccChecked}
-                                    />
-                                    <label className="text-white font-quantico font-bold">
-                                        Eksentrisitas
-                                    </label>
-                                </div>
+                                        className="rounded-lg bg-transparent mt-2 mx-2 p-2 border-2 border-gray-500"
+                                    >
+                                        <Typography className="font-bold font-quantico text-white">
+                                            Perbesar
+                                        </Typography>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setZoom((prev) => prev - 1);
+                                            if (eccChecked && zoom === 3)
+                                                setZoom(3);
+                                            if (zoom < 2) setZoom(1);
+                                            setZoomClicked(true);
+                                        }}
+                                        className="rounded-lg bg-transparent p-2 border-2 border-gray-500"
+                                    >
+                                        <Typography className="font-bold font-quantico text-white">
+                                            Perkecil
+                                        </Typography>
+                                    </button>
+                                    <button
+                                        onClick={() => setIsPaused(!isPaused)}
+                                        className="rounded-lg bg-transparent p-2 border-2 mt-2 mx-2 border-gray-500"
+                                    >
+                                        <Typography className="font-bold font-quantico text-white">
+                                            Pause/Play
+                                        </Typography>
+                                    </button>
+                                </Box>
+                                <hr className="mt-6" />
+                                <Box className="flex items-center justify-center">
+                                    <Typography className="uppercase font-bold font-quantico text-white text-center rounded-b-xl border-b-2 border-x-2 border-gray-500 py-1 w-5/12">
+                                        Mode
+                                    </Typography>
+                                </Box>
+                                <Box className="flex flex-col gap-0">
+                                    <div className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            value="Eksentrisitas"
+                                            className="m-4 w-5 h-5"
+                                            onChange={() => {
+                                                if (!eccChecked) {
+                                                    setZoom(4);
+                                                    setZoomClicked(true);
+                                                }
+                                                setEccChecked(!eccChecked);
+                                            }}
+                                            checked={eccChecked}
+                                        />
+                                        <label className="text-white font-quantico font-bold">
+                                            Eksentrisitas
+                                        </label>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            value="Eksentrisitas"
+                                            className="m-4 w-5 h-5"
+                                            onChange={() => {
+                                                if (!starChecked) {
+                                                    setZoom(2);
+                                                    setZoomClicked(true);
+                                                }
+                                                setStarChecked(!starChecked);
+                                            }}
+                                            checked={starChecked}
+                                        />
+                                        <label className="text-white font-quantico font-bold">
+                                            Bintang
+                                        </label>
+                                    </div>
+                                </Box>
+                                {eccChecked && (
+                                    <div className="m-auto w-5/6">
+                                        <Slider
+                                            max={2}
+                                            min={0}
+                                            size="small"
+                                            marks={marks.map((mark, i) => ({
+                                                ...mark,
+                                                label: (
+                                                    <Typography
+                                                        className={`text-[12px] text-white font-quantico font-bold -m-2 ${sliderLabelPlacement(
+                                                            i
+                                                        )}`}
+                                                    >
+                                                        {mark.label}
+                                                    </Typography>
+                                                ),
+                                            }))}
+                                            step={0.01}
+                                            value={ecc}
+                                            valueLabelDisplay="auto"
+                                            onChange={(e, val) => {
+                                                setEcc(val);
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                                {starChecked && (
+                                    <div className="m-auto w-5/6">
+                                        <Slider
+                                            size="small"
+                                            step={0.01}
+                                            value={starMass}
+                                            onChange={(e, val) => {
+                                                setStarMass(val);
+                                            }}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </Box>
                     </div>
