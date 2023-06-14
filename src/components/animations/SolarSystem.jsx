@@ -203,6 +203,8 @@ const SolarSystem = (props) => {
     const [starTemp, setStarTemp] = useState(5772);
     const [starMass, setStarMass] = useState(1);
 
+    const [modeChecked, setModeChecked] = useState(false);
+    const [selectedMode, setSelectedMode] = useState();
     const [eccChecked, setEccChecked] = useState(false);
     const [starChecked, setStarChecked] = useState(false);
 
@@ -478,6 +480,11 @@ const SolarSystem = (props) => {
         setIsPanning(false);
     };
 
+    // const handleChangeCheckbox = (pos) => {
+    //     const updatedState = selectedMode.map((mode, i) => i === pos ? !mode : mode);
+    //     setSelectedMode(updatedState)
+    // }
+
     return (
         <>
             <Box className="fixed top-0 w-full bg-transparent z-10">
@@ -538,7 +545,52 @@ const SolarSystem = (props) => {
                     </Breadcrumbs> */}
                 </Box>
             </Box>
-            <Box id="svg" className="overflow-y-hidden max-h-screen bg-black">
+            <Box
+                id="svg"
+                className="relative overflow-y-hidden max-h-screen bg-black"
+            >
+                {modeChecked && (
+                    <Box className="absolute w-7/12 top-[85%] right-[25%] bg-black/50 p-2 border-2 z-[1000] border-gray-500">
+                        {selectedMode === "Eksentrisitas" && (
+                            <div className="m-auto w-5/6 py-4">
+                                <Slider
+                                    max={2}
+                                    min={0}
+                                    marks={marks.map((mark, i) => ({
+                                        ...mark,
+                                        label: (
+                                            <Typography
+                                                className={`text-xl text-white font-quantico font-bold ${sliderLabelPlacement(
+                                                    i
+                                                )}`}
+                                            >
+                                                {mark.label}
+                                            </Typography>
+                                        ),
+                                    }))}
+                                    step={0.01}
+                                    value={ecc}
+                                    valueLabelDisplay="auto"
+                                    onChange={(e, val) => {
+                                        setEcc(val);
+                                    }}
+                                />
+                            </div>
+                        )}
+                        {selectedMode === "Bintang" && (
+                            <div className="m-auto w-5/6">
+                                <Slider
+                                    size="small"
+                                    step={0.01}
+                                    value={starMass}
+                                    onChange={(e, val) => {
+                                        setStarMass(val);
+                                    }}
+                                />
+                            </div>
+                        )}
+                    </Box>
+                )}
                 <div>
                     <div
                         // onMouseOver={() => setIsHovered(true)}
@@ -579,7 +631,7 @@ const SolarSystem = (props) => {
                                 // }px] left-[${
                                 //     selectedPlanetCoords.x + 20
                                 // }px] bg-white p-[10px]`}
-                                className="absolute w-1/4 top-8 right-72 bg-black/50 p-2 border-2 border-gray-500"
+                                className="absolute w-96 top-8 right-[22%] bg-black/50 p-2 border-2 border-gray-500"
                             >
                                 <PlanetAnnotation
                                     details={selectedPlanetDetails}
@@ -597,16 +649,17 @@ const SolarSystem = (props) => {
                                 </IconButton>
                             </Box>
                         )}
+
                         <Box
                             id="right-sidebar"
                             className={`absolute transform ${
                                 overlay ? "translate-x-0" : "translate-x-3/4"
                             } w-1/4 top-0 right-0 h-90vh bg-transparent flex transition-transform duration-300 z-40`}
                         >
-                            <Box className="w-1/4 h-full bg-transparent rounded-l-full">
-                                <div className="flex relative mr-24 justify-end items-center h-screen">
+                            <Box className="w-1/4 h-full bg-transparent">
+                                <div className="flex justify-center items-center h-screen">
                                     <div
-                                        className="flex absolute left-1/4 origin-center -rotate-90 justify-around items-center border-2 border-gray-500 px-8 rounded-t-2xl text-center transform"
+                                        className="flex origin-center ml-16 -rotate-90 justify-around items-center border-2 border-gray-500 px-8 rounded-t-2xl text-center transform"
                                         onClick={() => setOverlay(!overlay)}
                                     >
                                         <Typography className="text-white font-quantico px-2">
@@ -673,14 +726,24 @@ const SolarSystem = (props) => {
                                             type="checkbox"
                                             value="Eksentrisitas"
                                             className="m-4 w-5 h-5"
-                                            onChange={() => {
-                                                if (!eccChecked) {
+                                            onChange={(e) => {
+                                                if (
+                                                    selectedMode !==
+                                                    "Eksentrisitas"
+                                                ) {
                                                     setZoom(4);
                                                     setZoomClicked(true);
                                                 }
-                                                setEccChecked(!eccChecked);
+                                                setSelectedMode((prev) => {
+                                                    if (prev === e.target.value)
+                                                        return null;
+                                                    return e.target.value;
+                                                });
+                                                setModeChecked(!modeChecked);
                                             }}
-                                            checked={eccChecked}
+                                            checked={
+                                                selectedMode === "Eksentrisitas"
+                                            }
                                         />
                                         <label className="text-white font-quantico font-bold">
                                             Eksentrisitas
@@ -689,61 +752,29 @@ const SolarSystem = (props) => {
                                     <div className="flex items-center">
                                         <input
                                             type="checkbox"
-                                            value="Eksentrisitas"
+                                            value="Bintang"
                                             className="m-4 w-5 h-5"
-                                            onChange={() => {
-                                                if (!starChecked) {
+                                            onChange={(e) => {
+                                                if (
+                                                    selectedMode !== "Bintang"
+                                                ) {
                                                     setZoom(2);
                                                     setZoomClicked(true);
                                                 }
-                                                setStarChecked(!starChecked);
+                                                setSelectedMode((prev) => {
+                                                    if (prev === e.target.value)
+                                                        return null;
+                                                    return e.target.value;
+                                                });
+                                                setModeChecked(!modeChecked);
                                             }}
-                                            checked={starChecked}
+                                            checked={selectedMode === "Bintang"}
                                         />
                                         <label className="text-white font-quantico font-bold">
                                             Bintang
                                         </label>
                                     </div>
                                 </Box>
-                                {eccChecked && (
-                                    <div className="m-auto w-5/6">
-                                        <Slider
-                                            max={2}
-                                            min={0}
-                                            size="small"
-                                            marks={marks.map((mark, i) => ({
-                                                ...mark,
-                                                label: (
-                                                    <Typography
-                                                        className={`text-[12px] text-white font-quantico font-bold -m-2 ${sliderLabelPlacement(
-                                                            i
-                                                        )}`}
-                                                    >
-                                                        {mark.label}
-                                                    </Typography>
-                                                ),
-                                            }))}
-                                            step={0.01}
-                                            value={ecc}
-                                            valueLabelDisplay="auto"
-                                            onChange={(e, val) => {
-                                                setEcc(val);
-                                            }}
-                                        />
-                                    </div>
-                                )}
-                                {starChecked && (
-                                    <div className="m-auto w-5/6">
-                                        <Slider
-                                            size="small"
-                                            step={0.01}
-                                            value={starMass}
-                                            onChange={(e, val) => {
-                                                setStarMass(val);
-                                            }}
-                                        />
-                                    </div>
-                                )}
                             </div>
                         </Box>
                     </div>
