@@ -7,6 +7,7 @@ import {
     FormControlLabel,
     IconButton,
     Slider,
+    Tooltip,
     Typography,
 } from "@mui/material";
 import { Link } from "react-router-dom";
@@ -174,6 +175,45 @@ const marks = [
     },
 ];
 
+const starTempMarks = [
+    {
+        value: 500,
+        label: "Katai Coklat (Brown Dwarf)",
+    },
+    {
+        value: 1505,
+        label: "Katai Merah (Red Dwarf)",
+    },
+    {
+        value: 2505,
+        label: "Kelas M",
+    },
+    {
+        value: 4005,
+        label: "Kelas K",
+    },
+    {
+        value: 5410,
+        label: "Kelas G",
+    },
+    {
+        value: 6205,
+        label: "Kelas F",
+    },
+    {
+        value: 8020,
+        label: "Kelas A",
+    },
+    {
+        value: 15050,
+        label: "Kelas B",
+    },
+    {
+        value: 34050,
+        label: "Kelas O",
+    },
+];
+
 const SolarSystem = (props) => {
     const [player, setPlayer] = useState(0);
     const [elapsedTime, setElapsedTime] = useState(0);
@@ -199,14 +239,13 @@ const SolarSystem = (props) => {
     const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
 
     const [ecc, setEcc] = useState(0);
-    const [starRadius, setStarRadius] = useState(700);
+    const [starRadius, setStarRadius] = useState(4);
     const [starTemp, setStarTemp] = useState(5772);
     const [starMass, setStarMass] = useState(1);
 
     const [modeChecked, setModeChecked] = useState(false);
     const [selectedMode, setSelectedMode] = useState();
-    const [eccChecked, setEccChecked] = useState(false);
-    const [starChecked, setStarChecked] = useState(false);
+    const [massSliderChanged, setMassSliderChanged] = useState(false);
 
     var viewBox = { x: 0, y: 0, w: 1400, h: 1400 };
     const factor = { x: 85, y: 50 };
@@ -254,7 +293,7 @@ const SolarSystem = (props) => {
     }, [isPaused]);
 
     useEffect(() => {
-        if (!eccChecked) {
+        if (selectedMode !== "Eksentrisitas") {
             planetData.map(({ id, sma, smi, orbitSpeed, startPos }, i) => {
                 const updatedStartPos = startPos - orbitSpeed * elapsedTime;
 
@@ -373,7 +412,7 @@ const SolarSystem = (props) => {
     }, [selectedPlanet, player]);
 
     useEffect(() => {
-        if (eccChecked) {
+        if (selectedMode === "Eksentrisitas") {
             setZoom(4);
             setZoomClicked(true);
             setSelectedPlanetDetails(
@@ -387,10 +426,10 @@ const SolarSystem = (props) => {
                 })
             );
         }
-    }, [eccChecked]);
+    }, [selectedMode]);
 
     const showSolarSystem = () => {
-        if (eccChecked)
+        if (selectedMode === "Eksentrisitas")
             return (
                 <React.Fragment>
                     <ellipse
@@ -480,10 +519,23 @@ const SolarSystem = (props) => {
         setIsPanning(false);
     };
 
-    // const handleChangeCheckbox = (pos) => {
-    //     const updatedState = selectedMode.map((mode, i) => i === pos ? !mode : mode);
-    //     setSelectedMode(updatedState)
-    // }
+    const starColorChanger = (temp) => {
+        if (temp >= 500 && temp < 1500) return "#951915";
+        if (temp >= 1500 && temp < 2500) return "#FF932C";
+        if (temp >= 2500 && temp <= 3000) return "#FFA651";
+        if (temp > 3000 && temp <= 3500) return "#FFB770";
+        if (temp > 3500 && temp <= 4200) return "#FFCB96";
+        if (temp > 4200 && temp <= 4900) return "#FFD9B4";
+        if (temp > 4900 && temp <= 5400) return "#FFE8D6";
+        if (temp > 5400 && temp <= 6200) return "#FFF0E9";
+        if (temp > 6200 && temp <= 6900) return "#FFFFFF";
+        if (temp > 6900 && temp <= 8000) return "#EDEFFF";
+        if (temp > 8000 && temp <= 10000) return "#D6E1FF";
+        if (temp > 10000 && temp <= 15000) return "#C1D4FF";
+        if (temp > 15000 && temp <= 27000) return "#A9C5FF";
+        if (temp > 27000 && temp <= 40000) return "#99B9FF";
+        if (temp > 40000) return "#2F6FF5";
+    };
 
     return (
         <>
@@ -549,8 +601,8 @@ const SolarSystem = (props) => {
                 id="svg"
                 className="relative overflow-y-hidden max-h-screen bg-black"
             >
-                {modeChecked && (
-                    <Box className="absolute w-7/12 top-[85%] right-[25%] bg-black/50 p-2 border-2 z-[1000] border-gray-500">
+                {selectedMode !== null && selectedMode !== undefined && (
+                    <Box className="flex flex-col-reverse absolute w-7/12 top-[80%] right-[25%] bg-black/50 p-2 border-2 z-[1000] border-gray-500">
                         {selectedMode === "Eksentrisitas" && (
                             <div className="m-auto w-5/6 py-4">
                                 <Slider
@@ -578,16 +630,79 @@ const SolarSystem = (props) => {
                             </div>
                         )}
                         {selectedMode === "Bintang" && (
-                            <div className="m-auto w-5/6">
-                                <Slider
-                                    size="small"
-                                    step={0.01}
-                                    value={starMass}
-                                    onChange={(e, val) => {
-                                        setStarMass(val);
-                                    }}
-                                />
-                            </div>
+                            <Box>
+                                <div className="flex m-auto w-5/6">
+                                    <Typography className="mr-6 font-bold font-quantico text-white">
+                                        Temperatur:
+                                    </Typography>
+                                    <Slider
+                                        size="small"
+                                        min={500}
+                                        max={50000}
+                                        step={1000}
+                                        value={starTemp}
+                                        valueLabelDisplay="auto"
+                                        onChange={(e, val) => {
+                                            setStarTemp(val);
+                                        }}
+                                    />
+                                </div>
+                                <div className="flex m-auto w-5/6">
+                                    <Typography className="mr-6 font-bold font-quantico text-white">
+                                        Massa:
+                                    </Typography>
+                                    <Slider
+                                        size="small"
+                                        min={1}
+                                        max={250}
+                                        step={1}
+                                        value={starMass}
+                                        valueLabelDisplay="auto"
+                                        onChange={(e, val) => {
+                                            setMassSliderChanged(true);
+                                            setStarMass(val);
+                                            let r =
+                                                0.003 + 0.724 * Math.log(val);
+                                            setStarRadius(
+                                                3 + Math.pow(val, 0.55)
+                                            );
+                                        }}
+                                    />
+                                </div>
+                                {massSliderChanged && (
+                                    <div className="w-full flex justify-end">
+                                        <Tooltip
+                                            placement="top"
+                                            title={
+                                                <>
+                                                    <Typography className="text-xs">
+                                                        Karena massa dan radius
+                                                        bintang saling
+                                                        mempengaruhi.
+                                                    </Typography>
+                                                    <br />
+                                                    <Typography className="text-xs">
+                                                        Rumus kasar untuk
+                                                        menentukan radius dari
+                                                        perubahan massa adalah
+                                                    </Typography>
+                                                    <br />
+                                                    <Typography className="text-xs font-jetbrains">
+                                                        R = M
+                                                        <sup className="font-jetbrains">
+                                                            0.8
+                                                        </sup>
+                                                    </Typography>
+                                                </>
+                                            }
+                                        >
+                                            <Typography className="text-[10px] text-right text-white">
+                                                Kenapa radius ikut membesar?
+                                            </Typography>
+                                        </Tooltip>
+                                    </div>
+                                )}
+                            </Box>
                         )}
                     </Box>
                 )}
@@ -613,15 +728,15 @@ const SolarSystem = (props) => {
                             onMouseMove={(e) => svgOnMouseMove(e)}
                             onMouseUp={(e) => svgOnMouseUp(e)}
                         >
+                            {showSolarSystem()}
                             <circle
                                 cx="700"
                                 cy="700"
-                                r="5"
-                                stroke="yellow"
+                                r={starRadius}
+                                stroke={starColorChanger(starTemp)}
                                 strokeWidth="0.1"
-                                fill="yellow"
+                                fill={starColorChanger(starTemp)}
                             />
-                            {showSolarSystem()}
                         </svg>
 
                         {selectedPlanet && (
@@ -694,7 +809,11 @@ const SolarSystem = (props) => {
                                     <button
                                         onClick={() => {
                                             setZoom((prev) => prev - 1);
-                                            if (eccChecked && zoom === 3)
+                                            if (
+                                                selectedMode ===
+                                                    "Eksentrisitas" &&
+                                                zoom === 3
+                                            )
                                                 setZoom(3);
                                             if (zoom < 2) setZoom(1);
                                             setZoomClicked(true);
@@ -739,7 +858,6 @@ const SolarSystem = (props) => {
                                                         return null;
                                                     return e.target.value;
                                                 });
-                                                setModeChecked(!modeChecked);
                                             }}
                                             checked={
                                                 selectedMode === "Eksentrisitas"
@@ -758,7 +876,6 @@ const SolarSystem = (props) => {
                                                 if (
                                                     selectedMode !== "Bintang"
                                                 ) {
-                                                    setZoom(2);
                                                     setZoomClicked(true);
                                                 }
                                                 setSelectedMode((prev) => {
@@ -766,13 +883,13 @@ const SolarSystem = (props) => {
                                                         return null;
                                                     return e.target.value;
                                                 });
-                                                setModeChecked(!modeChecked);
                                             }}
                                             checked={selectedMode === "Bintang"}
                                         />
                                         <label className="text-white font-quantico font-bold">
                                             Bintang
                                         </label>
+                                        {console.log(modeChecked)}
                                     </div>
                                 </Box>
                             </div>
