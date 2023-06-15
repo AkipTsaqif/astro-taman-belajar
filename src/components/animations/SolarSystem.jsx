@@ -10,7 +10,7 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import _ from "lodash";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -20,6 +20,9 @@ import Navbar from "../../shared-components/Navbar";
 import AnimationControls from "../../shared-components/AnimationControls";
 import PlanetAnnotation from "./extra-components/PlanetAnnotation";
 import randomize from "../../utilities/randomize";
+import Home from "../main-menu/Home";
+import Chapter from "../chapter/Chapter";
+import Quiz from "../quiz/Quiz";
 
 const planetData = [
     {
@@ -31,6 +34,11 @@ const planetData = [
         details: {
             name: "Merkurius",
             distance: "57.9 juta km",
+            temp: {
+                cold: "-173 °C",
+                hot: "427 °C",
+                avg: "167 °C",
+            },
             eccentricity: "0.2056",
             diameter: "4,879 km",
             rotationPeriod: "58.6 hari",
@@ -48,6 +56,11 @@ const planetData = [
         details: {
             name: "Venus",
             distance: "108.2 juta km",
+            temp: {
+                cold: "462 °C",
+                hot: "462 °C",
+                avg: "462 °C",
+            },
             eccentricity: "0.0068",
             diameter: "12,104 km",
             rotationPeriod: "243 hari",
@@ -65,6 +78,11 @@ const planetData = [
         details: {
             name: "Bumi",
             distance: "149.6 juta km",
+            temp: {
+                cold: "-89 °C",
+                hot: "58 °C",
+                avg: "14 °C",
+            },
             eccentricity: "0.0167",
             diameter: "12,742 km",
             rotationPeriod: "24 jam",
@@ -82,6 +100,11 @@ const planetData = [
         details: {
             name: "Mars",
             distance: "227.9 juta km",
+            temp: {
+                cold: "-153 °C",
+                hot: "20 °C",
+                avg: "-63 °C",
+            },
             eccentricity: "0.0934",
             diameter: "6,779 km",
             rotationPeriod: "24.6 jam",
@@ -99,6 +122,11 @@ const planetData = [
         details: {
             name: "Jupiter",
             distance: "778.6 juta km",
+            temp: {
+                cold: "-145 °C",
+                hot: "-108 °C",
+                avg: "-145 °C",
+            },
             eccentricity: "0.0484",
             diameter: "139,820 km",
             rotationPeriod: "9.9 jam",
@@ -116,6 +144,11 @@ const planetData = [
         details: {
             name: "Saturnus",
             distance: "1.4 milyar km",
+            temp: {
+                cold: "-178 °C",
+                hot: "-138 °C",
+                avg: "-160 °C",
+            },
             eccentricity: "0.0556",
             diameter: "116,460 km",
             rotationPeriod: "10.7 jam",
@@ -133,6 +166,11 @@ const planetData = [
         details: {
             name: "Uranus",
             distance: "2.9 milyar km",
+            temp: {
+                cold: "-224 °C",
+                hot: "-197 °C",
+                avg: "-220 °C",
+            },
             eccentricity: "0.0444",
             diameter: "50,724 km",
             rotationPeriod: "17.2 jam",
@@ -150,6 +188,11 @@ const planetData = [
         details: {
             name: "Neptunus",
             distance: "4.5 milyar km",
+            temp: {
+                cold: "-223 °C",
+                hot: "-201 °C",
+                avg: "-220 °C",
+            },
             eccentricity: "0.0112",
             diameter: "49,244 km",
             rotationPeriod: "16.1 jam",
@@ -159,6 +202,19 @@ const planetData = [
         },
     },
 ];
+
+const sunData = {
+    id: "sun",
+    details: {
+        name: "Matahari",
+        diameter: "1,391,000 km",
+        rotationPeriod: "58.6 hari",
+        age: "4.6 milyar tahun",
+        temp: {
+            avg: "5772 °C",
+        },
+    },
+};
 
 const marks = [
     {
@@ -215,16 +271,21 @@ const starTempMarks = [
 ];
 
 const SolarSystem = (props) => {
+    const [homeClosed, setHomeClosed] = useState(false);
     const [player, setPlayer] = useState(0);
     const [elapsedTime, setElapsedTime] = useState(0);
     const [isPanning, setIsPanning] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
+    const [moreInfo, setMoreInfo] = useState(false);
+    const [navbarHeight, setNavbarHeight] = useState(0);
 
-    const pathnames = location.pathname.split("/").filter((x) => x);
+    const navbarRef = useRef(null);
+    const location = useLocation();
 
     const [overlay, setOverlay] = useState(true);
     const [zoom, setZoom] = useState(1);
     const [zoomClicked, setZoomClicked] = useState(false);
+    const [sunSelected, setSunSelected] = useState(false);
     const [panClicked, setPanClicked] = useState(false);
     const [selectedPlanet, setSelectedPlanet] = useState(null);
     const [selectedPlanetDetails, setSelectedPlanetDetails] = useState(null);
@@ -237,6 +298,7 @@ const SolarSystem = (props) => {
         offsetY: 0,
     });
     const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
+    const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
     const [ecc, setEcc] = useState(0);
     const [starRadius, setStarRadius] = useState(4);
@@ -411,6 +473,11 @@ const SolarSystem = (props) => {
         }
     }, [selectedPlanet, player]);
 
+    useEffect(
+        () => console.log(selectedPlanetDetails),
+        [selectedPlanetDetails]
+    );
+
     useEffect(() => {
         if (selectedMode === "Eksentrisitas") {
             setZoom(4);
@@ -445,7 +512,7 @@ const SolarSystem = (props) => {
                     <circle id="earth" r={2 / (zoom / 1.5)} fill="red" />
                 </React.Fragment>
             );
-        else
+        else {
             return planetData.map(({ id, sma, smi }) => (
                 <React.Fragment key={id}>
                     <ellipse
@@ -465,10 +532,12 @@ const SolarSystem = (props) => {
                         onClick={() => {
                             setSelectedPlanet(id);
                             setIsPaused(true);
+                            setSunSelected(false);
                         }}
                     />
                 </React.Fragment>
             ));
+        }
     };
 
     const svgOnMouseDown = (e) => {
@@ -537,72 +606,62 @@ const SolarSystem = (props) => {
         if (temp > 40000) return "#2F6FF5";
     };
 
+    useEffect(
+        () => setNavbarHeight(navbarRef.current.clientHeight),
+        [navbarRef.current]
+    );
+
+    const showQuiz = () => {
+        if (location.pathname === "/kuis") {
+            // setOverlay(false);
+            // setMoreInfo(false);
+            // setSelectedPlanet(null);
+            // setSelectedPlanetDetails(null);
+            // setZoom(1);
+
+            return <Quiz navbarHeight={navbarHeight} />;
+        }
+    };
+
     return (
         <>
-            <Box className="fixed top-0 w-full bg-transparent z-10">
-                <Box id="topbar" className="flex flex-col p-3">
-                    <Typography
-                        className="text-white text-2xl font-bold font-bebas"
-                        variant="h6"
-                    >
-                        Astronomi dan Angkasa Luar
-                    </Typography>
-                    <Box className="flex w-2/3">
-                        <Link
-                            to="/tata-surya"
-                            key="sol"
-                            className="font-quantico capitalize font-bold text-white w-1/12"
-                        >
-                            Home
-                        </Link>
-                        <Link
-                            to="/tata-surya"
-                            key="kuis"
-                            className="font-quantico capitalize font-bold text-white w-1/12"
-                        >
-                            Kuis
-                        </Link>
-                    </Box>
-
-                    {/* <Breadcrumbs
-                        separator={
-                            <ArrowRightAltIcon fontSize="small" color="white" />
-                        }
-                    >
-                        <Link to="/" className="font-quantico text-white">
-                            Home
-                        </Link>
-                        {pathnames.map((name, index) => {
-                            const routeTo = `/${pathnames
-                                .slice(0, index + 1)
-                                .join("/")}`;
-                            const isLast = index === pathnames.length - 1;
-                            return isLast ? (
-                                <Typography
-                                    className="font-bold font-quantico capitalize text-white"
-                                    key={name}
-                                >
-                                    {name}
-                                </Typography>
-                            ) : (
-                                <Link
-                                    to={routeTo}
-                                    key={name}
-                                    className="font-quantico capitalize text-white"
-                                >
-                                    {name}
-                                </Link>
-                            );
-                        })}
-                    </Breadcrumbs> */}
-                </Box>
-            </Box>
+            <Navbar ref={navbarRef} />
             <Box
                 id="svg"
                 className="relative overflow-y-hidden max-h-screen bg-black"
             >
+                <Outlet />
+                {() => showQuiz()}
+                {!homeClosed && (
+                    <Box className="w-2/3 flex flex-col items-center absolute top-1/2 left-1/2 transform -translate-x-[50%] -translate-y-[50%] my-auto bg-black z-[2] p-2 border-2 border-gray-500">
+                        <Home />
+                        <button
+                            onClick={() => {
+                                setHomeClosed(true);
+                            }}
+                            className="w-1/4 my-2 rounded-lg bg-transparent p-2 border-2 border-gray-500"
+                        >
+                            <Typography className="font-bold font-quantico text-white">
+                                Mulai
+                            </Typography>
+                        </button>
+                    </Box>
+                )}
+                {moreInfo && (
+                    <Box
+                        sx={{ mt: `${navbarRef.current.clientHeight}px` }}
+                        className={`absolute w-2/3 bg-black/50 z-[2] p-2 border-2 border-gray-500`}
+                    >
+                        <Chapter
+                            subject={
+                                sunSelected ? sunData : selectedPlanetDetails
+                            }
+                            isSun={sunSelected}
+                        />
+                    </Box>
+                )}
                 {selectedMode !== null && selectedMode !== undefined && (
-                    <Box className="flex flex-col-reverse absolute w-7/12 top-[80%] right-[25%] bg-black/50 p-2 border-2 z-[1000] border-gray-500">
+                    <Box className="flex flex-col-reverse absolute w-7/12 top-[80%] right-[25%] bg-black/50 p-2 border-2 z-[3] border-gray-500">
                         {selectedMode === "Eksentrisitas" && (
                             <div className="m-auto w-5/6 py-4">
                                 <Slider
@@ -633,7 +692,7 @@ const SolarSystem = (props) => {
                             <Box>
                                 <div className="flex m-auto w-5/6">
                                     <Typography className="mr-6 font-bold font-quantico text-white">
-                                        Temperatur:
+                                        Suhu:
                                     </Typography>
                                     <Slider
                                         size="small"
@@ -736,26 +795,37 @@ const SolarSystem = (props) => {
                                 stroke={starColorChanger(starTemp)}
                                 strokeWidth="0.1"
                                 fill={starColorChanger(starTemp)}
+                                onClick={() => setSunSelected(true)}
                             />
                         </svg>
 
-                        {selectedPlanet && (
+                        {(selectedPlanet || sunSelected) && (
                             <Box
-                                // className={`absolute top-[${
-                                //     selectedPlanetCoords.y - 50
-                                // }px] left-[${
-                                //     selectedPlanetCoords.x + 20
-                                // }px] bg-white p-[10px]`}
-                                className="absolute w-96 top-8 right-[22%] bg-black/50 p-2 border-2 border-gray-500"
+                                sx={{
+                                    top: navbarRef.current.clientHeight / 3,
+                                    right: overlay ? "22%" : "4%",
+                                }}
+                                className={`absolute w-96 transition-all z-[4] transform duration-300 bg-black/50 p-2 border-2 border-gray-500`}
                             >
                                 <PlanetAnnotation
-                                    details={selectedPlanetDetails}
+                                    details={
+                                        sunSelected
+                                            ? sunData
+                                            : selectedPlanetDetails
+                                    }
+                                    isSun={sunSelected}
+                                    subjectSelect={() => {
+                                        setMoreInfo(true);
+                                        setOverlay(false);
+                                    }}
                                 />
                                 <IconButton
-                                    className="absolute top-0 right-0 z-50 p-2"
+                                    className="absolute top-0 right-0  p-2"
                                     size="small"
                                     onClick={() => {
                                         setIsPaused(false);
+                                        setSunSelected(false);
+                                        setMoreInfo(false);
                                         setSelectedPlanet(null);
                                         setSelectedPlanetDetails(null);
                                     }}
@@ -764,136 +834,151 @@ const SolarSystem = (props) => {
                                 </IconButton>
                             </Box>
                         )}
-
-                        <Box
-                            id="right-sidebar"
-                            className={`absolute transform ${
-                                overlay ? "translate-x-0" : "translate-x-3/4"
-                            } w-1/4 top-0 right-0 h-90vh bg-transparent flex transition-transform duration-300 z-40`}
-                        >
-                            <Box className="w-1/4 h-full bg-transparent">
-                                <div className="flex justify-center items-center h-screen">
-                                    <div
-                                        className="flex origin-center ml-16 -rotate-90 justify-around items-center border-2 border-gray-500 px-8 rounded-t-2xl text-center transform"
-                                        onClick={() => setOverlay(!overlay)}
-                                    >
-                                        <Typography className="text-white font-quantico px-2">
-                                            Options
-                                        </Typography>
-                                        <SettingsIcon
-                                            fontSize="small"
-                                            className="text-white"
-                                        />
+                        {homeClosed && (
+                            <Box
+                                id="right-sidebar"
+                                className={`absolute transform ${
+                                    overlay
+                                        ? "translate-x-0"
+                                        : "translate-x-3/4"
+                                } w-1/4 top-0 right-0 h-90vh bg-transparent flex transition-transform duration-300`}
+                            >
+                                <Box className="w-1/4 h-full bg-transparent">
+                                    <div className="flex justify-center items-center h-screen">
+                                        <div
+                                            className="flex origin-center ml-16 -rotate-90 justify-around items-center border-2 border-gray-500 px-8 rounded-t-2xl text-center transform"
+                                            onClick={() => setOverlay(!overlay)}
+                                        >
+                                            <Typography className="text-white font-quantico px-2">
+                                                Options
+                                            </Typography>
+                                            <SettingsIcon
+                                                fontSize="small"
+                                                className="text-white"
+                                            />
+                                        </div>
                                     </div>
+                                </Box>
+                                <div className="w-3/4 bg-transparent border-l-2 border-y-2 my-6 border-gray-500">
+                                    <Box className="flex items-center justify-center mb-2">
+                                        <Typography className="uppercase font-bold font-quantico text-white text-center rounded-b-xl border-b-2 border-x-2 border-gray-500 py-1 w-5/12">
+                                            Kontrol
+                                        </Typography>
+                                    </Box>
+                                    <Box>
+                                        <button
+                                            onClick={() => {
+                                                setZoom((prev) => prev + 1);
+                                                if (zoom > 4) setZoom(5);
+                                                setZoomClicked(true);
+                                            }}
+                                            className="rounded-lg bg-transparent mt-2 mx-2 p-2 border-2 border-gray-500"
+                                        >
+                                            <Typography className="font-bold font-quantico text-white">
+                                                Perbesar
+                                            </Typography>
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setZoom((prev) => prev - 1);
+                                                if (
+                                                    selectedMode ===
+                                                        "Eksentrisitas" &&
+                                                    zoom === 3
+                                                )
+                                                    setZoom(3);
+                                                if (zoom < 2) setZoom(1);
+                                                setZoomClicked(true);
+                                            }}
+                                            className="rounded-lg bg-transparent p-2 border-2 border-gray-500"
+                                        >
+                                            <Typography className="font-bold font-quantico text-white">
+                                                Perkecil
+                                            </Typography>
+                                        </button>
+                                        <button
+                                            onClick={() =>
+                                                setIsPaused(!isPaused)
+                                            }
+                                            className="rounded-lg bg-transparent p-2 border-2 mt-2 mx-2 border-gray-500"
+                                        >
+                                            <Typography className="font-bold font-quantico text-white">
+                                                Pause/Play
+                                            </Typography>
+                                        </button>
+                                    </Box>
+                                    <hr className="mt-6" />
+                                    <Box className="flex items-center justify-center">
+                                        <Typography className="uppercase font-bold font-quantico text-white text-center rounded-b-xl border-b-2 border-x-2 border-gray-500 py-1 w-5/12">
+                                            Mode
+                                        </Typography>
+                                    </Box>
+                                    <Box className="flex flex-col gap-0">
+                                        <div className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                value="Eksentrisitas"
+                                                className="m-4 w-5 h-5"
+                                                onChange={(e) => {
+                                                    if (
+                                                        selectedMode !==
+                                                        "Eksentrisitas"
+                                                    ) {
+                                                        setZoom(4);
+                                                        setZoomClicked(true);
+                                                    }
+                                                    setSelectedMode((prev) => {
+                                                        if (
+                                                            prev ===
+                                                            e.target.value
+                                                        )
+                                                            return null;
+                                                        return e.target.value;
+                                                    });
+                                                }}
+                                                checked={
+                                                    selectedMode ===
+                                                    "Eksentrisitas"
+                                                }
+                                            />
+                                            <label className="text-white font-quantico font-bold">
+                                                Eksentrisitas
+                                            </label>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                value="Bintang"
+                                                className="m-4 w-5 h-5"
+                                                onChange={(e) => {
+                                                    if (
+                                                        selectedMode !==
+                                                        "Bintang"
+                                                    ) {
+                                                        setZoomClicked(true);
+                                                    }
+                                                    setSelectedMode((prev) => {
+                                                        if (
+                                                            prev ===
+                                                            e.target.value
+                                                        )
+                                                            return null;
+                                                        return e.target.value;
+                                                    });
+                                                }}
+                                                checked={
+                                                    selectedMode === "Bintang"
+                                                }
+                                            />
+                                            <label className="text-white font-quantico font-bold">
+                                                Karakteristik Bintang
+                                            </label>
+                                            {console.log(modeChecked)}
+                                        </div>
+                                    </Box>
                                 </div>
                             </Box>
-                            <div className="w-3/4 bg-transparent border-l-2 border-y-2 my-6 border-gray-500">
-                                <Box className="flex items-center justify-center mb-2">
-                                    <Typography className="uppercase font-bold font-quantico text-white text-center rounded-b-xl border-b-2 border-x-2 border-gray-500 py-1 w-5/12">
-                                        Kontrol
-                                    </Typography>
-                                </Box>
-                                <Box>
-                                    <button
-                                        onClick={() => {
-                                            setZoom((prev) => prev + 1);
-                                            if (zoom > 4) setZoom(5);
-                                            setZoomClicked(true);
-                                        }}
-                                        className="rounded-lg bg-transparent mt-2 mx-2 p-2 border-2 border-gray-500"
-                                    >
-                                        <Typography className="font-bold font-quantico text-white">
-                                            Perbesar
-                                        </Typography>
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setZoom((prev) => prev - 1);
-                                            if (
-                                                selectedMode ===
-                                                    "Eksentrisitas" &&
-                                                zoom === 3
-                                            )
-                                                setZoom(3);
-                                            if (zoom < 2) setZoom(1);
-                                            setZoomClicked(true);
-                                        }}
-                                        className="rounded-lg bg-transparent p-2 border-2 border-gray-500"
-                                    >
-                                        <Typography className="font-bold font-quantico text-white">
-                                            Perkecil
-                                        </Typography>
-                                    </button>
-                                    <button
-                                        onClick={() => setIsPaused(!isPaused)}
-                                        className="rounded-lg bg-transparent p-2 border-2 mt-2 mx-2 border-gray-500"
-                                    >
-                                        <Typography className="font-bold font-quantico text-white">
-                                            Pause/Play
-                                        </Typography>
-                                    </button>
-                                </Box>
-                                <hr className="mt-6" />
-                                <Box className="flex items-center justify-center">
-                                    <Typography className="uppercase font-bold font-quantico text-white text-center rounded-b-xl border-b-2 border-x-2 border-gray-500 py-1 w-5/12">
-                                        Mode
-                                    </Typography>
-                                </Box>
-                                <Box className="flex flex-col gap-0">
-                                    <div className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            value="Eksentrisitas"
-                                            className="m-4 w-5 h-5"
-                                            onChange={(e) => {
-                                                if (
-                                                    selectedMode !==
-                                                    "Eksentrisitas"
-                                                ) {
-                                                    setZoom(4);
-                                                    setZoomClicked(true);
-                                                }
-                                                setSelectedMode((prev) => {
-                                                    if (prev === e.target.value)
-                                                        return null;
-                                                    return e.target.value;
-                                                });
-                                            }}
-                                            checked={
-                                                selectedMode === "Eksentrisitas"
-                                            }
-                                        />
-                                        <label className="text-white font-quantico font-bold">
-                                            Eksentrisitas
-                                        </label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            value="Bintang"
-                                            className="m-4 w-5 h-5"
-                                            onChange={(e) => {
-                                                if (
-                                                    selectedMode !== "Bintang"
-                                                ) {
-                                                    setZoomClicked(true);
-                                                }
-                                                setSelectedMode((prev) => {
-                                                    if (prev === e.target.value)
-                                                        return null;
-                                                    return e.target.value;
-                                                });
-                                            }}
-                                            checked={selectedMode === "Bintang"}
-                                        />
-                                        <label className="text-white font-quantico font-bold">
-                                            Bintang
-                                        </label>
-                                        {console.log(modeChecked)}
-                                    </div>
-                                </Box>
-                            </div>
-                        </Box>
+                        )}
                     </div>
                 </div>
             </Box>

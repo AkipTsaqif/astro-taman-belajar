@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import Navbar from "../../shared-components/Navbar";
+import Navbar from "../../shared-components/Navbar_old";
 import Eccentricity from "./Eccentricity";
 
 const AnimationMenu = (props) => {

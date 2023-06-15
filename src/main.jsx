@@ -1,6 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+    BrowserRouter,
+    createBrowserRouter,
+    Route,
+    RouterProvider,
+    Routes,
+} from "react-router-dom";
 import Home from "./components/main-menu/Home";
 import SolarSystem from "./components/animations/SolarSystem";
 import Eccentricity2 from "./components/animations/Eccentricity2";
@@ -10,14 +16,17 @@ import { CssBaseline } from "@mui/material";
 import Chapter from "./components/chapter/Chapter";
 import AnimationsMenu from "./components/animations/AnimationsMenu";
 import Quiz from "./components/quiz/Quiz";
+import Quiz_C from "./components/quiz/cijois/Quiz";
+import QuizStart_C from "./components/quiz/cijois/QuizStart copy";
+import QuizStart from "./components/quiz/cijois/QuizStart";
 
 const router = createBrowserRouter([
     {
-        path: "/",
+        path: "/home",
         element: <Home />,
     },
     {
-        path: "/tata-surya",
+        path: "/",
         element: <SolarSystem />,
     },
     {
@@ -37,6 +46,18 @@ const router = createBrowserRouter([
         element: <Quiz />,
     },
     {
+        path: "/kuis4",
+        element: <Quiz_C />,
+    },
+    {
+        path: "/kuis2",
+        element: <QuizStart_C />,
+    },
+    {
+        path: "/kuis3",
+        element: <QuizStart />,
+    },
+    {
         path: "/animasi",
         element: <AnimationsMenu />,
     },
@@ -45,6 +66,11 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
         <CssBaseline />
-        <RouterProvider router={router} />
+        {/* <RouterProvider router={router} /> */}
+        <BrowserRouter>
+            <Routes>
+                <Route path="/*" element={<SolarSystem />} />
+            </Routes>
+        </BrowserRouter>
     </React.StrictMode>
 );
