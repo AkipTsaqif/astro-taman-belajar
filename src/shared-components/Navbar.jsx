@@ -4,7 +4,10 @@ import { forwardRef } from "react";
 
 const Navbar = forwardRef((props, ref) => {
     return (
-        <Box ref={ref} className="fixed top-0 w-full bg-transparent z-[2]">
+        <Box
+            ref={ref}
+            className="fixed ml-2 mt-2 top-0 w-full bg-transparent z-[2]"
+        >
             <Box id="topbar" className="flex flex-col p-3">
                 <Typography
                     className="text-white text-2xl font-bold font-bebas"

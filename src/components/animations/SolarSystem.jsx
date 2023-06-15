@@ -631,7 +631,6 @@ const SolarSystem = (props) => {
                 className="relative overflow-y-hidden max-h-screen bg-black"
             >
                 <Outlet />
-                {() => showQuiz()}
                 {!homeClosed && (
                     <Box className="w-2/3 flex flex-col items-center absolute top-1/2 left-1/2 transform -translate-x-[50%] -translate-y-[50%] my-auto bg-black z-[2] p-2 border-2 border-gray-500">
                         <Home />
@@ -834,7 +833,7 @@ const SolarSystem = (props) => {
                                 </IconButton>
                             </Box>
                         )}
-                        {homeClosed && (
+                        {homeClosed && location.pathname === "/" && (
                             <Box
                                 id="right-sidebar"
                                 className={`absolute transform ${
@@ -980,6 +979,9 @@ const SolarSystem = (props) => {
                             </Box>
                         )}
                     </div>
+                    {homeClosed && location.pathname.startsWith("/kuis") && (
+                        <Quiz navbarHeight={navbarHeight} />
+                    )}
                 </div>
             </Box>
         </>
